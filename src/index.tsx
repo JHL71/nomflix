@@ -4,6 +4,7 @@ import App from './App';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { theme } from './theme';
 import { RecoilRoot } from 'recoil';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -52,7 +53,11 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
   body {
+    font-weight: 300;
     font-family: 'Source Sans 3', sans-serif;
+    color: ${props => props.theme.white.darker};
+    line-height: 1.2;
+    background-color: black;
   }
   button {
     border: none;
@@ -70,16 +75,20 @@ const GlobalStyle = createGlobalStyle`
   }
 `
 
+const client = new QueryClient();
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
     <RecoilRoot >
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <App />
-      </ThemeProvider>
+      <QueryClientProvider client={client}>
+        <ThemeProvider theme={theme}>
+          <GlobalStyle />
+          <App />
+        </ThemeProvider>
+      </QueryClientProvider>
     </RecoilRoot>
   </React.StrictMode>
 );
