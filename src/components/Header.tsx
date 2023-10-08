@@ -1,4 +1,4 @@
-import { motion, useAnimation, useScroll } from 'framer-motion'
+import { motion, useScroll } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Link, useMatch } from 'react-router-dom'
 import styled from 'styled-components'
@@ -100,51 +100,22 @@ const logoVariants = {
  }
 }
 
-const navVariants = {
-  top: {
-    backgroundColor: "rgba(0, 0, 0, 0)"
-  },
-  scroll: {
-    backgroundColor: "rgba(0, 0, 0, 1)"
-  }
-}
-
 const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isTop, setIsTop] = useState(false);
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("/tv");
-  const inputAnimation = useAnimation();
-  const navAnimation = useAnimation();
   const { scrollY } = useScroll();
 
-  const toggleSearch = () => {
-    if (searchOpen) {
-      inputAnimation.start({
-        scaleX: 0
-      })
-    } else {
-      inputAnimation.start({
-        scaleX: 1
-      })
-    }
-    setSearchOpen(prev => !prev);
-  }
+  const toggleSearch = () => setSearchOpen(prev => !prev);
 
   useEffect(() => {
-    scrollY.on("change", () => {
-      if (scrollY.get() > 80) {
-        navAnimation.start("scroll")
-      } else {
-        navAnimation.start("top")
-      }
-    })
-  }, [scrollY, navAnimation])
-
+    scrollY.on("change", () => setIsTop(scrollY.get() > 160 ? false : true))
+  }, [scrollY])
+  
   return (
     <Nav 
-      variants={navVariants}
-      initial={"top"}
-      animate={navAnimation}
+      animate={{backgroundColor: isTop ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 1)" }}
     >
       <Col>
         <Logo
@@ -179,9 +150,8 @@ const Header = () => {
         <Search >
           <Input 
             initial={{ scaleX: 0 }}
-            animate={inputAnimation} 
+            animate={{ scaleX: searchOpen ? 1 : 0}}
             transition={{ type: "linear" }}
-            exit={"exit"}
             placeholder="search for movie or tv show..." 
           />
           <motion.svg
