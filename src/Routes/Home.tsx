@@ -1,13 +1,15 @@
 import { useQuery } from "react-query";
-import { IGetMoviesResulte, getMovies, getTrending } from "../api";
+import { IGetMoviesResult, getMovies, getTrending } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
-import { MotionSlider } from "../components";
-import { useMatch, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion, useScroll } from "framer-motion";
+import { MotionSlider, SelectedModal } from "../components";
+import { useMatch } from "react-router-dom";
+import { AnimatePresence, useScroll } from "framer-motion";
 
 const Wrap = styled.div`
   background: black;
+  padding-bottom: 300px;
+  overflow: hidden;
 `
 
 const Loader = styled.div`
@@ -49,90 +51,50 @@ const Overview = styled.p`
 const NowPlayingWrap = styled.div`
   position: relative;
   top: -100px;
+  width: 100%;
 `
 
 const SliderWrap = styled.div`
   position: relative;
   margin-top: 250px;
+  width: 100%;
   &:nth-child(3) {
     margin-top: 140px;
   }
 `
 
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-`
-
-const BigMovie = styled(motion.div)`
-  position: absolute;
-  width: 40vw;
-  height: 80vh;
-  left: 0;
-  right: 0;
-  margin: 100px auto 0 auto;
-  background-color: ${props => props.theme.black.lighter};
-  border-radius: 15px;
-  overflow: hidden;
-`
-
-const BigCover = styled.div`
-  width: 100%;
-  background-size: cover;
-  background-position: center center;
-  height: 400px;
-`
-
-const BigTitle = styled.h3`
-  color: ${props => props.theme.white.lighter};
-  padding: 10px;
-  font-size: 44px;
-  position: relative;
-  top: -80px;
-`
-
-const BigOverview = styled.p`
-  padding: 20px;
-  position: relative;
-  top: -80px;
-  color: ${props => props.theme.white.lighter};
-`
-
 const Home = () => {
-  const { data, isLoading } = useQuery<IGetMoviesResulte>(
+  const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"], 
     () => getMovies("now_playing"), 
     { refetchOnWindowFocus: false }
   );
-  const { data: topRated, isLoading: topLoading } = useQuery<IGetMoviesResulte>(
+  const { data: topRated, isLoading: topLoading } = useQuery<IGetMoviesResult>(
     ["movies", "topRated"], 
     () => getMovies("top_rated"), 
     { refetchOnWindowFocus: false }
   );
-  const { data: upcoming, isLoading: uLoading } = useQuery<IGetMoviesResulte>(
+  const { data: upcoming, isLoading: uLoading } = useQuery<IGetMoviesResult>(
     ["movies", "upcoming"], 
     () => getMovies("upcoming"), 
     { refetchOnWindowFocus: false }
   );
-  const { data: trendingMv, isLoading: tLoading } = useQuery<IGetMoviesResulte>(
+  const { data: trendingMv, isLoading: tLoading } = useQuery<IGetMoviesResult>(
     ["movies", "trending"], 
     () => getTrending("movie", "day"), 
     { refetchOnWindowFocus: false }
   );
-  const bigMovieMatch = useMatch("/movies/:movieId");
-  const navigate = useNavigate();
+  
+  const bigMovieMatch = useMatch("/nomflix/movies/:movieId");
   const { scrollY } = useScroll();
-  const clickedMovie = 
-    bigMovieMatch?.params.movieId && 
-    data?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId);
-
-  const onOverlayClick = () => {
-    navigate(-1);
-  }
+  const clickedMovie = bigMovieMatch?.params.movieId
+      && (bigMovieMatch.params.movieId.split(',')[1] === 'popular' 
+        ? data?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId?.split(',')[0])
+        : bigMovieMatch.params.movieId.split(',')[1] === 'top_rated'
+          ? topRated?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId?.split(',')[0])
+          : bigMovieMatch.params.movieId.split(',')[1] === 'trending'
+            ? trendingMv?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId?.split(',')[0])
+            : upcoming?.results.find((movie) => String(movie.id) === bigMovieMatch.params.movieId?.split(',')[0]));
 
   return (
     <Wrap>
@@ -146,42 +108,31 @@ const Home = () => {
           </Banner>
           <NowPlayingWrap>
             <MoviesTitle>Popular</MoviesTitle>
-            <MotionSlider category={"popular"} slideData={data?.results.slice(1) || []} />
+            <MotionSlider tap="movie" category={"popular"} slideData={data?.results.slice(1) || []} />
           </NowPlayingWrap>
           <SliderWrap>
             <MoviesTitle>Top Rated</MoviesTitle>
-            <MotionSlider category={"top_rated"} slideData={topRated?.results || []} />
+            <MotionSlider tap="movie" category={"top_rated"} slideData={topRated?.results || []} />
           </SliderWrap>
           <SliderWrap>
             <MoviesTitle>Trending</MoviesTitle>
-            <MotionSlider category={"trending"} slideData={trendingMv?.results || []} />
+            <MotionSlider tap="movie" category={"trending"} slideData={trendingMv?.results || []} />
           </SliderWrap>
           <SliderWrap>
             <MoviesTitle>Upcoming</MoviesTitle>
-            <MotionSlider category={"upcoming"} slideData={upcoming?.results || []} />
+            <MotionSlider tap="movie" category={"upcoming"} slideData={upcoming?.results || []} />
           </SliderWrap>
           <AnimatePresence>
             {bigMovieMatch && 
               <>
-                <Overlay onClick={onOverlayClick} exit={{opacity: 0}} animate={{opacity: 1}}/>
-                <BigMovie 
-                  style={{
-                    top: scrollY
-                  }}
-                  layoutId={bigMovieMatch.params.movieId}
-                >
-                  {clickedMovie && 
-                    <>
-                      <BigCover 
-                        style={{ 
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`
-                        }} 
-                      />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
-                    </>
-                  }
-                </BigMovie>
+                {clickedMovie &&
+                  <SelectedModal 
+                    layoutId={bigMovieMatch.params.movieId || ""} 
+                    id={clickedMovie.id} 
+                    category={"movie"}
+                    scrollY={scrollY}
+                  />
+                }
               </>
             }
           </AnimatePresence>

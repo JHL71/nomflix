@@ -1,14 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import styled from "styled-components"
-import { IMovies, mvCategory } from "../api"
+import { IMovies, mvCategory, tvCategory } from "../api"
 import { makeImagePath } from "../utils"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 
 const Slider = styled(motion.div)`
+  
 `
 
 
@@ -19,16 +20,26 @@ const Row = styled(motion.div)`
   grid-template-columns: repeat(6, 1fr);
   gap: 5px;
   margin-bottom: 10px;
+  padding: 0 10px;
 `
 
 const Box = styled(motion.div)<{$bgPhoto: string}>`
-  background-image: url(${props => props.$bgPhoto});
+  /* background-image: url(${props => props.$bgPhoto});
   background-size: cover;
-  background-position: center center;
-  height: 200px;
+  background-position: center center; */
+  /* height: 200px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   font-size: 66px;
   cursor: pointer;
-  &:first-child {
+  img {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+  }
+  & :first-child {
     transform-origin: center left;
   }
   &:last-child {
@@ -89,12 +100,14 @@ const Page = styled(motion.div)<IPage>`
 `
 
 const Info = styled(motion.div)`
-  position: absolute;
   width: 100%;
-  padding: 10px;
   background-color: ${props => props.theme.black.lighter};
   opacity: 0;
-  bottom: 0;
+  padding: 10px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   h4 {
     text-align: center;
     font-size: 18px;
@@ -124,6 +137,7 @@ const BoxVariants = {
   hover: {
     scale: 1.3,
     y: -50,
+    zIndex: 10,
     transition: {
       type: "tween",
       delay: 0.5
@@ -142,11 +156,12 @@ const InfoVariants = {
 }
 
 interface IMotionSlider {
-  category: mvCategory;
+  category: mvCategory | tvCategory | "searchMv" | "searchTv";
   slideData: IMovies[];
+  tap: "movie" | "tv";
 }
 
-const MotionSlider = ({ category, slideData }: IMotionSlider) => {
+const MotionSlider = ({ category, slideData, tap }: IMotionSlider) => {
   const offset = 6;
   const maxPage = Math.floor(slideData.length / offset);
   const lastPageLength = slideData.slice(offset * maxPage, offset * (maxPage + 1)).length;
@@ -155,6 +170,8 @@ const MotionSlider = ({ category, slideData }: IMotionSlider) => {
   const [leaving, setLeaving] = useState(false);
   const [mouseOver, setMouseOver] = useState(0); 
   const navigate = useNavigate();
+  const location = useLocation();
+  const keyword = new URLSearchParams(location.search).get("keyword");
 
   const increasePage = () => {
     if (leaving) return ;
@@ -173,9 +190,16 @@ const MotionSlider = ({ category, slideData }: IMotionSlider) => {
   const toggleLeaving = () => setLeaving(prev => !prev);
 
   const onBoxClicked = (movieId: number) => {
-    navigate(`/movies/${movieId + ',' + category}`);
+    if (category === "searchTv" || category === "searchMv") {
+      navigate(`./${movieId + ',' + category}?keyword=${keyword}`);
+      return ;
+    }
+    if (tap === "movie")
+      navigate(`/nomflix/movies/${movieId + ',' + category}`);
+    if (tap === "tv")
+      navigate(`/nomflix/tv/${movieId + ',' + category}`);
   }
-  
+  console.log('x');
   return (
     <Slider onMouseEnter={() => setMouseOver(1)} onMouseLeave={() => setMouseOver(0)}>
       <ButtonWrap initial={{opacity: 0}} animate={{opacity: mouseOver}}>
@@ -214,12 +238,12 @@ const MotionSlider = ({ category, slideData }: IMotionSlider) => {
                   initial={"normal"}
                   whileHover={"hover"}
                   transition={{type: "tween"}}
-                  key={movie.id}
+                  key={movie.id + category}
                   onClick={() => onBoxClicked(movie.id)}
-                  $bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
                 >
+                  <img src={makeImagePath(movie.backdrop_path || "", "w500")} alt="backdrop" />
                   <Info variants={InfoVariants} >
-                    <h4>{movie.title}</h4>
+                    <h4>{tap === "movie" ? movie.title : movie.name}</h4>
                   </Info>
                 </Box>
               )
@@ -230,14 +254,17 @@ const MotionSlider = ({ category, slideData }: IMotionSlider) => {
               && slideData.slice(0, offset * (maxPage + 1) - slideData.length)
                 .map((movie) => {
                   return (
-                    <Box 
-                      layoutId={movie.id + "," + category}
-                      exit={{ opacity: isBack }}
-                      key={movie.id}
-                      $bgPhoto={makeImagePath(movie.backdrop_path)}
-                    >
-                      <Info variants={InfoVariants} />
-                    </Box>
+                      <Box 
+                        layoutId={movie.id + "," + category}
+                        exit={{ opacity: isBack }}
+                        key={movie.id}
+                        $bgPhoto={makeImagePath(movie.backdrop_path || "", "w500")}
+                      >
+                        <img src={makeImagePath(movie.backdrop_path || "", "w500")} alt="backdrop" />
+                        <Info variants={InfoVariants} >
+                          <h4>{tap === "movie" ? movie.title : movie.name}</h4>
+                        </Info>
+                      </Box>
                   )
                 })
           }

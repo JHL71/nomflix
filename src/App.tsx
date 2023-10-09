@@ -8,10 +8,12 @@ function App() {
       <Router>
         <Header />
         <Routes>
-          <Route path="/" element={<Home />}/>
-          <Route path="/movies/:movieId" element={<Home />}/>
-          <Route path="/tv" element={<Tv />}/>
-          <Route path="/search" element={<Search />}/>
+          <Route path="/nomflix" element={<Home />}/>
+          <Route path="/nomflix/movies/:movieId" element={<Home />}/>
+          <Route path="/nomflix/tv" element={<Tv />}/>
+          <Route path="/nomflix/tv/:movieId" element={<Tv />}/>
+          <Route path="/nomflix/search" element={<Search />}/>
+          <Route path="/nomflix/search/:movieId" element={<Search />}/>
         </Routes>
       </Router>
     </div>

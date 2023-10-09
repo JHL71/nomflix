@@ -14,6 +14,7 @@ const Nav = styled(motion.nav)`
   font-size: 14px;
   padding: 20px 60px;
   color: white;
+  z-index: 99;
 `
 
 const Col = styled.div`
@@ -108,8 +109,8 @@ interface IForm {
 const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [isTop, setIsTop] = useState(false);
-  const homeMatch = useMatch("/");
-  const tvMatch = useMatch("/tv");
+  const homeMatch = useMatch("/nomflix");
+  const tvMatch = useMatch("/nomflix/tv");
   const { scrollY } = useScroll();
   const {register, handleSubmit, setValue} = useForm<IForm>()
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ const Header = () => {
 
   const onValid = (data: IForm) => {
     console.log(data);
-    navigate(`/search?keyword=${data.keyword}`);
+    navigate(`/nomflix/search?keyword=${data.keyword}`);
     setValue("keyword", "");
   }
 
@@ -139,6 +140,7 @@ const Header = () => {
           width="1024"
           height="276.742"
           viewBox="0 0 1024 276.742"
+          onClick={() => navigate('/nomflix/', {replace: true})}
         >
           <motion.path 
             variants={logoVariants}
@@ -148,12 +150,12 @@ const Header = () => {
         </Logo>
         <Items>
           <Item>
-            <Link to="/">
+            <Link to="/nomflix" replace={true}>
               Home {homeMatch && <Circle layoutId="circle"/>}
             </Link>
           </Item>
           <Item>
-            <Link to="/tv">
+            <Link to="/nomflix/tv" replace={true}>
               Tv Shows {tvMatch && <Circle layoutId="circle"/>}
             </Link>
           </Item>
