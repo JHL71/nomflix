@@ -259,6 +259,7 @@ const MotionSlider = ({ category, slideData, tap }: IMotionSlider) => {
                         exit={{ opacity: isBack }}
                         key={movie.id}
                         $bgPhoto={makeImagePath(movie.backdrop_path || "", "w500")}
+                        onClick={() => onBoxClicked(movie.id)}
                       >
                         <img src={makeImagePath(movie.backdrop_path || "", "w500")} alt="backdrop" />
                         <Info variants={InfoVariants} >
