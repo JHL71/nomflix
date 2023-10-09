@@ -1,3 +1,4 @@
 import Header from "./Header";
+import MotionSlider from "./MotionSlider";
 
-export { Header };
+export { Header, MotionSlider };

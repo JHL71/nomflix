@@ -54,7 +54,7 @@ const GlobalStyle = createGlobalStyle`
   }
   body {
     font-weight: 300;
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: 'Noto Sans', sans-serif;
     color: ${props => props.theme.white.darker};
     line-height: 1.2;
     background-color: black;
