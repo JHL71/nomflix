@@ -1,5 +1,5 @@
 import { useQuery } from "react-query";
-import { IGetMoviesResulte, getMovies } from "../api";
+import { IGetMoviesResulte, getMovies, getTrending } from "../api";
 import styled from "styled-components";
 import { makeImagePath } from "../utils";
 import { MotionSlider } from "../components";
@@ -51,6 +51,14 @@ const NowPlayingWrap = styled.div`
   top: -100px;
 `
 
+const SliderWrap = styled.div`
+  position: relative;
+  margin-top: 250px;
+  &:nth-child(3) {
+    margin-top: 140px;
+  }
+`
+
 const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -97,10 +105,23 @@ const BigOverview = styled.p`
 const Home = () => {
   const { data, isLoading } = useQuery<IGetMoviesResulte>(
     ["movies", "nowPlaying"], 
-    getMovies, 
-    {
-      refetchOnWindowFocus: false
-    }
+    () => getMovies("now_playing"), 
+    { refetchOnWindowFocus: false }
+  );
+  const { data: topRated, isLoading: topLoading } = useQuery<IGetMoviesResulte>(
+    ["movies", "topRated"], 
+    () => getMovies("top_rated"), 
+    { refetchOnWindowFocus: false }
+  );
+  const { data: upcoming, isLoading: uLoading } = useQuery<IGetMoviesResulte>(
+    ["movies", "upcoming"], 
+    () => getMovies("upcoming"), 
+    { refetchOnWindowFocus: false }
+  );
+  const { data: trendingMv, isLoading: tLoading } = useQuery<IGetMoviesResulte>(
+    ["movies", "trending"], 
+    () => getTrending("movie", "day"), 
+    { refetchOnWindowFocus: false }
   );
   const bigMovieMatch = useMatch("/movies/:movieId");
   const navigate = useNavigate();
@@ -115,7 +136,7 @@ const Home = () => {
 
   return (
     <Wrap>
-      {isLoading 
+      {isLoading || topLoading || uLoading || tLoading
         ? <Loader>Loading...</Loader>
         : 
         <>
@@ -124,9 +145,21 @@ const Home = () => {
             <Overview>{data?.results[0].overview}</Overview>
           </Banner>
           <NowPlayingWrap>
-            <MoviesTitle>Popular in Nomflix</MoviesTitle>
-            <MotionSlider slideData={data?.results.slice(1) || []} />
+            <MoviesTitle>Popular</MoviesTitle>
+            <MotionSlider category={"popular"} slideData={data?.results.slice(1) || []} />
           </NowPlayingWrap>
+          <SliderWrap>
+            <MoviesTitle>Top Rated</MoviesTitle>
+            <MotionSlider category={"top_rated"} slideData={topRated?.results || []} />
+          </SliderWrap>
+          <SliderWrap>
+            <MoviesTitle>Trending</MoviesTitle>
+            <MotionSlider category={"trending"} slideData={trendingMv?.results || []} />
+          </SliderWrap>
+          <SliderWrap>
+            <MoviesTitle>Upcoming</MoviesTitle>
+            <MotionSlider category={"upcoming"} slideData={upcoming?.results || []} />
+          </SliderWrap>
           <AnimatePresence>
             {bigMovieMatch && 
               <>

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import styled from "styled-components"
-import { IMovies } from "../api"
+import { IMovies, mvCategory } from "../api"
 import { makeImagePath } from "../utils"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons"
@@ -142,10 +142,11 @@ const InfoVariants = {
 }
 
 interface IMotionSlider {
-  slideData: IMovies[]
+  category: mvCategory;
+  slideData: IMovies[];
 }
 
-const MotionSlider = ({ slideData }: IMotionSlider) => {
+const MotionSlider = ({ category, slideData }: IMotionSlider) => {
   const offset = 6;
   const maxPage = Math.floor(slideData.length / offset);
   const lastPageLength = slideData.slice(offset * maxPage, offset * (maxPage + 1)).length;
@@ -172,7 +173,7 @@ const MotionSlider = ({ slideData }: IMotionSlider) => {
   const toggleLeaving = () => setLeaving(prev => !prev);
 
   const onBoxClicked = (movieId: number) => {
-    navigate(`/movies/${movieId}`);
+    navigate(`/movies/${movieId + ',' + category}`);
   }
   
   return (
@@ -208,7 +209,7 @@ const MotionSlider = ({ slideData }: IMotionSlider) => {
             slideData.slice(offset * page, offset * (page + 1)).map((movie) => {
               return (
                 <Box 
-                  layoutId={movie.id + ""}
+                  layoutId={movie.id + "," + category}
                   variants={BoxVariants}
                   initial={"normal"}
                   whileHover={"hover"}
@@ -230,7 +231,7 @@ const MotionSlider = ({ slideData }: IMotionSlider) => {
                 .map((movie) => {
                   return (
                     <Box 
-                      layoutId={movie.id + ""}
+                      layoutId={movie.id + "," + category}
                       exit={{ opacity: isBack }}
                       key={movie.id}
                       $bgPhoto={makeImagePath(movie.backdrop_path)}
