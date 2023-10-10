@@ -67,7 +67,7 @@ const Rate = styled.div`
 
 const GenreWrap = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   justify-items: center;
   align-items: center;
   padding: 20px;
@@ -75,7 +75,7 @@ const GenreWrap = styled.div`
 `
 
 const Genre = styled.div`
-  width: 100px;
+  width: 130px;
   height: 30px;
   border-radius: 10px;
   background-color: ${props => props.theme.black.darker};
